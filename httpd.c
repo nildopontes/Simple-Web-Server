@@ -18,7 +18,6 @@
 char js[]   = "text/javascript",
      html[] = "text/html",
      css[]  = "text/css",
-     oga[]  = "audio/webm;codecs=opus",
      txt[]  = "text/plain",
      bin[]  = "aplication/octet-stream";
 
@@ -33,7 +32,7 @@ int     payload_size; // size of body in bytes
 static int listenfd, clients[CONNMAX];
 
 typedef struct { char *name, *value; } header_t;
-static header_t reqhdr[17] = { {"\0", "\0"} };
+static header_t reqhdr[30] = { {"\0", "\0"} };
 static int clientfd;
 
 static char *buf;
@@ -72,7 +71,6 @@ void defineMimeByName(){
     else p++; if(strcmp(p, "js") == 0) mime = js;
     else if(strcmp(p, "html") == 0) mime = html;
     else if(strcmp(p, "css") == 0) mime = css;
-    else if(strcmp(p, "oga") == 0) mime = oga;
     else if(strcmp(p, "txt") == 0) mime = txt;
     else mime = bin; // bin se aplica a qualquer extensão desconhecida
 }
@@ -166,8 +164,8 @@ void respond(int n){
         }
         header_t *h = reqhdr;
         char *t, *t2;
-        while(h < reqhdr+16){
-            char *k,*v,*t;
+        while(h < reqhdr+29){
+            char *k,*v;
             k = strtok(NULL, "\r\n: \t"); if (!k) break;
             v = strtok(NULL, "\r\n");     while(*v && *v==' ') v++;
             h->name  = k;
@@ -176,7 +174,7 @@ void respond(int n){
             t = v + 1 + strlen(v);
             if (t[1] == '\r' && t[2] == '\n') break;
         }
-        t++;
+        t += 3;
         t2 = request_header("Content-Length");
         payload = t; // body da requisição
         payload_size = t2 ? atol(t2) : (rcvd-(t-buf)); // Tamanho do body da requisição
